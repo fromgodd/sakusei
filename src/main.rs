@@ -1,22 +1,35 @@
-use std::fs::File;
-use std::io::prelude::*;
-use clap::{Arg, App};
 mod args;
+mod errors;
 
-fn main() -> std::io::Result<()> {
-    let matches = App::new("sakusei")
-                          .version("0.1.0")
-                          .subcommand(args::new_file_subcommand())
-                          .get_matches();
+use std::fs::File;
+use std::path::PathBuf;
+use std::{env, fs};
+use args::parse_args;
 
-    match matches.subcommand() {
-        Some(("new", new_matches)) => {
-            let filename = new_matches.value_of("filename").unwrap();
-            let mut file = File::create(filename)?;
-            file.write_all(b"Hello, world!")?;
-        },
-        _ => {}
+fn try_main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = parse_args()?;
+    for arg in &args {
+        if arg.is_dir() {
+            if arg.as_os_str().to_string_lossy().ends_with('/')
+                || arg.as_os_str().to_string_lossy().ends_with('\\')
+            {
+                fs::create_dir_all(arg)?;
+            } else {
+                fs::create_dir_all(arg.parent().ok_or(errors::CustomError::InvalidParentDirectory)?)?;
+                if !arg.exists() {
+                    File::create(arg)?;
+                }
+            }
+        } else if !arg.exists() {
+            File::create(arg)?;
+        }
     }
-
     Ok(())
+}
+
+fn main() {
+    if let Err(e) = try_main() {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    }
 }
