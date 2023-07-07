@@ -9,7 +9,7 @@ Before you can compile and use Sakusei, you need to have Cargo installed on your
 To install Sakusei globally on your system, you can use Cargo's `install` command with the `--locked` flag to ensure a consistent version and the `--git` flag to specify the repository:
 
 ```shell
-cargo install --locked --git https://github.com/fromgodd/sakusei saku
+cargo install --locked --git https://github.com/fromgodd/sakusei sakusei
 ```
 This command will download the source code from the given GitHub repository and build Sakusei, making it available as a global command-line tool.
 
